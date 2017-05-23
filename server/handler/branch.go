@@ -1,6 +1,10 @@
 package handler
 
-import "net"
+import (
+	"net"
+
+	"github.com/fmyxyz/connectYou/server/data"
+)
 
 type BranchHandler struct {
 	Handlers map[byte]Handler
@@ -9,8 +13,8 @@ type BranchHandler struct {
 func NewBranchHandler() BranchHandler {
 	return BranchHandler{Handlers: make(map[byte]Handler, 1<<6)}
 }
-func (bh *BranchHandler) Handle(conn net.Conn, data Metadata) Metadata {
-	h := bh.Handlers[data.OperTpye]
+func (bh *BranchHandler) Handle(conn net.Conn, data data.Metadata) data.Metadata {
+	h := bh.Handlers[data.ReqType]
 	data = h.Handle(conn, data)
 	return data
 }

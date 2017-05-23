@@ -1,9 +1,12 @@
 package handler
 
-import "net"
+import (
+	"net"
+	"github.com/fmyxyz/connectYou/server/data"
+)
 
 type Handler interface {
-	Handle(conn net.Conn, data Metadata) Metadata
+	Handle(conn net.Conn, data data.Metadata) data.Metadata
 }
 
 type BaseHandler struct {
@@ -13,7 +16,7 @@ type BaseHandler struct {
 func NewBaseHandler() BaseHandler {
 	return BaseHandler{Handlers: make([]Handler, 0, 1<<6)}
 }
-func (bh *BaseHandler) Handle(conn net.Conn, data Metadata) Metadata {
+func (bh *BaseHandler) Handle(conn net.Conn, data data.Metadata) data.Metadata {
 	for _, h := range bh.Handlers {
 		data = h.Handle(conn, data)
 	}

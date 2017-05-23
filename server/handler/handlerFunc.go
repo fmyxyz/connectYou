@@ -1,9 +1,13 @@
 package handler
 
-import "net"
+import (
+	"net"
 
-type HandlerFunc func(conn net.Conn, data Metadata) Metadata
+	"github.com/fmyxyz/connectYou/server/data"
+)
 
-func (handlerFunc HandlerFunc) Handle(conn net.Conn, data Metadata) Metadata {
+type HandlerFunc func(conn net.Conn, data data.Metadata) data.Metadata
+
+func (handlerFunc HandlerFunc) Handle(conn net.Conn, data data.Metadata) data.Metadata {
 	return handlerFunc(conn, data)
 }
