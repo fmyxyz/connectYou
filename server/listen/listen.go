@@ -43,6 +43,9 @@ func websocketHandler(ws *websocket.Conn) {
 	handleConn(ws)
 }
 
+var connYouMap map[string]net.Conn
+
+
 func handleConn(conn net.Conn) {
 	//TODO 保存于客户端的链接
 	defer conn.Close()
