@@ -1,31 +1,17 @@
 package handler
 
 import (
-	"net"
+	"bufio"
+
 	"github.com/fmyxyz/connectYou/server/data"
 )
 
 type Handler interface {
-	Handle(conn net.Conn, data data.Metadata) data.Metadata
+	Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, data data.Metadata) data.Metadata
 }
 
-type BaseHandler struct {
-	Handlers []Handler
-}
+type HandlerFunc func(bufReader *bufio.Reader, bufWriter *bufio.Writer, data data.Metadata) data.Metadata
 
-func NewBaseHandler() BaseHandler {
-	return BaseHandler{Handlers: make([]Handler, 0, 1<<6)}
-}
-func (bh *BaseHandler) Handle(conn net.Conn, data data.Metadata) data.Metadata {
-	for _, h := range bh.Handlers {
-		data = h.Handle(conn, data)
-	}
-	return data
-}
-func (bh *BaseHandler) AddHandler(h Handler) {
-	bh.Handlers = append(bh.Handlers, h)
-}
-
-func (bh *BaseHandler) AddHandlerFunc(h HandlerFunc) {
-	bh.Handlers = append(bh.Handlers, h)
+func (handlerFunc HandlerFunc) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, data data.Metadata) data.Metadata {
+	return handlerFunc(bufReader, bufWriter, data)
 }

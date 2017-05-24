@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"net"
+	"bufio"
 
 	"github.com/fmyxyz/connectYou/server/data"
 )
@@ -13,9 +13,9 @@ type SequenceHandler struct {
 func NewSequenceHandler() SequenceHandler {
 	return SequenceHandler{Handlers: make([]Handler, 0, 1<<6)}
 }
-func (bh *SequenceHandler) Handle(conn net.Conn, data data.Metadata) data.Metadata {
+func (bh *SequenceHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, data data.Metadata) data.Metadata {
 	for _, h := range bh.Handlers {
-		data = h.Handle(conn, data)
+		data = h.Handle(bufReader, bufWriter, data)
 	}
 	return data
 }

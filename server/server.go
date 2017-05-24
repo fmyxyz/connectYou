@@ -13,6 +13,6 @@ var (
 
 func main() {
 	flag.Parse()
-
-	listen.StartServer(*port)
+	listen.StartTCPServer(35580)
+	listen.StartWebsocketServer(28656)
 }
