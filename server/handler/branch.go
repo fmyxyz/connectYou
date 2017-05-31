@@ -7,21 +7,25 @@ import (
 )
 
 type BranchHandler struct {
-	handlers map[byte]Handler
+	handlers map[uint8]Handler
+	SequenceHandler
 }
 
 func NewBranchHandler() BranchHandler {
-	return BranchHandler{handlers: make(map[byte]Handler, 1<<6)}
+	return BranchHandler{handlers: make(map[uint8]Handler, 1<<6), SequenceHandler: NewSequenceHandler()}
 }
-func (bh *BranchHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, data data.Metadata) data.Metadata {
+func (bh *BranchHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, data *data.Metadata) {
 	h := bh.handlers[data.ReqType]
-	data = h.Handle(bufReader, bufWriter, data)
-	return data
+	if h != nil {
+		h.Handle(bufReader, bufWriter, data)
+	} else {
+		bh.SequenceHandler.Handle(bufReader, bufWriter, data)
+	}
 }
-func (bh *BranchHandler) AddHandler(b byte, h Handler) {
+func (bh *BranchHandler) AddHandler(b uint8, h Handler) {
 	bh.handlers[b] = h
 }
 
-func (bh *BranchHandler) AddHandlerFunc(b byte, h HandlerFunc) {
+func (bh *BranchHandler) AddHandlerFunc(b uint8, h HandlerFunc) {
 	bh.handlers[b] = h
 }

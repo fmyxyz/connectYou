@@ -20,15 +20,15 @@ func BytesToUint8(bs []byte) uint8 {
 }
 
 func Int32ToBytes(i int32) []byte {
-	bs := make([]byte, 4)
+	bs := make([]byte, 0, 4)
 	buff := bytes.NewBuffer(bs)
 	binary.Write(buff, binary.BigEndian, &i)
-	return bs
+	return buff.Bytes()
 }
 
 func Uint8ToBytes(i uint8) []byte {
-	bs := make([]byte, 1)
+	bs := make([]byte, 0, 1)
 	buff := bytes.NewBuffer(bs)
 	binary.Write(buff, binary.BigEndian, &i)
-	return bs
+	return buff.Bytes()
 }
