@@ -58,19 +58,14 @@ func handleConn(conn net.Conn) {
 	bufReader := bufio.NewReader(conn)
 	bufWriter := bufio.NewWriter(conn)
 	for {
-		log.Println("请求包处理......")
 		md := data.NewMetadata(bigDataLength, key)
-		log.Println("1......")
 		err := md.Unpacking(bufReader)
-		log.Println("2......")
 		if err != nil {
 			log.Println(err)
 			conn.Close()
 			break
 		}
 		md.Conn = conn
-		log.Println("3......")
 		routeHandler.Handle(bufReader, bufWriter, md)
-		log.Println("请求包处理完成......")
 	}
 }

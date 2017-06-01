@@ -20,7 +20,6 @@ func NewHeartbeatHandler(second int) *HeartbeatHandler {
 	return &hh
 }
 func (bh *HeartbeatHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, md *data.Metadata) {
-	log.Println("心跳处理。。。")
 	bh.conn = md.Conn
 	_, err := bufWriter.Write(md.Packing())
 	if err != nil {

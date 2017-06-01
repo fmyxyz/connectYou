@@ -46,24 +46,19 @@ func (md *Metadata) Packing() []byte {
 		md.BigDataLength = 1 << 17
 	}
 	bs := make([]byte, 0, 6+md.Length)
-	log.Println("数据长度：", len(bs))
 	buff := bytes.NewBuffer(bs)
-	log.Println("写入数据。。。")
 	i, err := buff.Write(Int32ToBytes(md.Length))
 	if err != nil || i != 4 {
 		log.Println("打包错误：", err)
 	}
-	log.Println("写入数据：", i)
 	i, err = buff.Write(Uint8ToBytes(md.ReqType))
 	if err != nil || i != 1 {
 		log.Println("打包错误：", err)
 	}
-	log.Println("写入数据：", i)
 	i, err = buff.Write(Uint8ToBytes(md.ResType))
 	if err != nil || i != 1 {
 		log.Println("打包错误：", err)
 	}
-	log.Println("写入数据：", i)
 	if md.Length > md.BigDataLength {
 		md.HasHandleData = false
 	} else {
@@ -72,11 +67,7 @@ func (md *Metadata) Packing() []byte {
 		if err != nil || i != int(md.Length) {
 			log.Println("打包错误：", err)
 		}
-		log.Println("写入数据：", i)
 	}
-	log.Println("数据：", len(bs), cap(bs))
-	bb := buff.Bytes()
-	log.Println("数据：", len(bb), cap(bb))
 	return buff.Bytes()
 }
 
@@ -106,7 +97,6 @@ func (md *Metadata) Unpacking(bufReader *bufio.Reader) error {
 		if err != nil || i != int(md.Length) {
 			log.Println("打包错误：", err)
 		}
-		log.Println("数据长度：", i, "数据：", string(md.Data))
 	}
 	return nil
 }

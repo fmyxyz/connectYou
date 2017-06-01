@@ -1,12 +1,17 @@
 package main
 
 import (
+	"bufio"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"net"
+	"os"
 	"time"
+
+	"strings"
 
 	"github.com/fmyxyz/connectYou/server/data"
 	"github.com/fmyxyz/connectYou/server/listen"
@@ -25,32 +30,47 @@ func main() {
 		log.Println("连接不上主机：", err)
 		return
 	}
+	defer conn.Close()
 	key := fmt.Sprint(rand.Int63n(time.Now().UnixNano()))
+	go sendHeartbeatHandler(key, conn)
+	bufReader := bufio.NewReader(os.Stdin)
+	for {
+		cmd, err := bufReader.ReadString(byte('\n'))
+		cmd = strings.TrimSpace(cmd)
+		if err == nil {
+			if cmd == "exit" {
+				break
+			}
+			var bigDataLength int32 = 1 << 17
+			md := data.NewMetadata(bigDataLength, key)
+			md.ReqType = listen.JsonHandlerKey
+			m := data.Message{MsgType: "test", Msg: cmd, FromConnId: key}
+			data, _ := json.Marshal(m)
+			md.Data = data
+			md.Length = int32(len(md.Data))
+			bs := md.Packing()
+			dl, err := conn.Write(bs)
+			if err != nil || dl != int(md.Length)+6 {
+				log.Println("发送数据错误：", err)
+				break
+			}
+		} else {
+			break
+		}
+	}
+}
+
+func sendHeartbeatHandler(key string, conn net.Conn) {
 	var bigDataLength int32 = 1 << 17
 	for {
-		log.Println("纯json数据打包。。。")
 		md := data.NewMetadata(bigDataLength, key)
-		//md.ReqType = listen.HeartbeatHandlerKey
-		//conn.Write(md.Packing())
-		md.ReqType = listen.JsonHandlerKey
-		md.Data = []byte(`{
-	"msg_type": "msg_type",
-	"msg": "msg",
-	"from_user_id": "from_user_id",
-	"to_user_id": "to_user_id",
-	"from_conn_id": "from_conn_id",
-	"to_conn_id": "to_conn_id"
-}`)
+		md.ReqType = listen.HeartbeatHandlerKey
 		md.Length = int32(len(md.Data))
-		log.Println("纯json数据开始发送。。。")
 		dl, err := conn.Write(md.Packing())
-		if err != nil {
-			conn.Close()
+		if err != nil || dl != 6 {
 			log.Println("发送数据错误：", err)
 			break
 		}
-		log.Println("纯json数据已发送", dl, "bytes")
 		time.Sleep(10 * time.Second)
 	}
-
 }
