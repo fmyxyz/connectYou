@@ -13,7 +13,7 @@ import (
 
 	"strings"
 
-	"github.com/fmyxyz/connectYou/server/data"
+	"github.com/fmyxyz/connectYou/core/data"
 	"github.com/fmyxyz/connectYou/server/listen"
 )
 

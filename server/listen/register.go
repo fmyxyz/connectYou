@@ -3,7 +3,7 @@ package listen
 import (
 	"net"
 
-	"github.com/fmyxyz/connectYou/server/handler"
+	"github.com/fmyxyz/connectYou/core/handler"
 )
 
 var routeHandler handler.BranchHandler

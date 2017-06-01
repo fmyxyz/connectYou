@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/fmyxyz/connectYou/server/data"
-	"github.com/fmyxyz/connectYou/server/handler"
+	"github.com/fmyxyz/connectYou/core/data"
+	"github.com/fmyxyz/connectYou/core/handler"
 	"golang.org/x/net/websocket"
 )
 
