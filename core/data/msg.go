@@ -8,3 +8,8 @@ type Message struct {
 	FromConnId string `json:"from_conn_id"`
 	ToConnId   string `json:"to_conn_id"`
 }
+
+type Cmd struct {
+	CMD string
+	Who string
+}

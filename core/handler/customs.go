@@ -3,7 +3,6 @@ package handler
 import (
 	"bufio"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net"
 
@@ -37,9 +36,7 @@ func NewJsonHandler() *JsonHandler {
 	return &hh
 }
 func (bh *JsonHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, md *data.Metadata) {
-	log.Println("纯json数据处理。。。")
 	msg := data.Message{}
-	log.Println(md.HasHandleData)
 	if md.HasHandleData {
 		json.Unmarshal(md.Data, &msg)
 	} else {
@@ -52,7 +49,6 @@ func (bh *JsonHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, 
 		}
 		json.Unmarshal(md.Data, &msg)
 	}
-	fmt.Println(msg)
 }
 
 //富文本json
@@ -88,5 +84,4 @@ func (bh *RelayMsgHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writ
 		log.Println(err)
 		md.Conn.Close()
 	}
-
 }
