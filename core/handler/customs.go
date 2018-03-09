@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/fmyxyz/connectYou/core"
 	"github.com/fmyxyz/connectYou/core/data"
 )
 
@@ -44,11 +45,12 @@ func (bh *JsonHandler) Handle(bufReader *bufio.Reader, bufWriter *bufio.Writer, 
 		lens, err := bufReader.Read(bs)
 		if err != nil || lens != int(md.Length) {
 			md.Conn.Close()
-			delete(ConnYouMap, md.ConnId)
+			delete(core.ConnYouMap, md.ConnId)
 			return
 		}
 		json.Unmarshal(md.Data, &msg)
 	}
+
 }
 
 //富文本json

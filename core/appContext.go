@@ -3,34 +3,51 @@ package core
 import (
 	"context"
 	"errors"
+	"net"
 	"time"
 )
 
-type ConnContext struct {
-	Session
+var appContext *AppContext
+
+func init() {
+	appContext = NewAppContext()
+}
+func GetAppContext() *AppContext {
+	return appContext
+}
+
+type AppContext struct {
+	conns map[string]*ConnContext
 	context.Context
 }
 
-func NewConnContext(parent context.Context) *ConnContext {
-	return &ConnContext{Context: parent}
+func NewAppContext() *AppContext {
+	return &AppContext{Context: context.Background()}
 }
 
-func (cc *ConnContext) Deadline() (deadline time.Time, ok bool) {
+func (cc *AppContext) Deadline() (deadline time.Time, ok bool) {
 	return cc.Context.Deadline()
 }
 
-func (cc *ConnContext) Done() <-chan struct{} {
+func (cc *AppContext) Done() <-chan struct{} {
 	return cc.Context.Done()
 }
 
-func (cc *ConnContext) Err() error {
+func (cc *AppContext) Err() error {
 	return errors.New("context error")
 }
 
-func (cc *ConnContext) Value(key interface{}) interface{} {
+func (cc *AppContext) Value(key interface{}) interface{} {
 	if k, ok := key.(string); ok {
-		return cc.GetAttr(k)
+		return cc.conns[k]
 	}
 	return nil
 }
 
+func (cc *AppContext) GetConn(k string) net.Conn {
+	return cc.conns[k].GetConn()
+}
+
+func (cc *AppContext) RemoveConn(k string) {
+	delete(cc.conns, k)
+}

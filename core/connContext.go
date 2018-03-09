@@ -2,8 +2,7 @@ package core
 
 import (
 	"context"
-	"errors"
-	"time"
+	"net"
 )
 
 type ConnContext struct {
@@ -11,25 +10,8 @@ type ConnContext struct {
 	context.Context
 }
 
-func NewConnContext(parent context.Context) *ConnContext {
-	return &ConnContext{Context: parent}
-}
-
-func (cc *ConnContext) Deadline() (deadline time.Time, ok bool) {
-	return cc.Context.Deadline()
-}
-
-func (cc *ConnContext) Done() <-chan struct{} {
-	return cc.Context.Done()
-}
-
-func (cc *ConnContext) Err() error {
-	return errors.New("context error")
-}
-
-func (cc *ConnContext) Value(key interface{}) interface{} {
-	if k, ok := key.(string); ok {
-		return cc.GetAttr(k)
-	}
-	return nil
+func NewConnContext(conn net.Conn) *ConnContext {
+	conncontext := &ConnContext{Context: GetAppContext(), Session: NewSession(conn)}
+	GetAppContext().conns[conncontext.id] = conncontext
+	return conncontext
 }

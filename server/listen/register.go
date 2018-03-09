@@ -1,8 +1,6 @@
 package listen
 
 import (
-	"net"
-
 	"github.com/fmyxyz/connectYou/core/handler"
 )
 
@@ -27,5 +25,4 @@ func init() {
 	routeHandler.AddHandler(HeartbeatHandlerKey, handler.NewHeartbeatHandler(30))
 	routeHandler.AddHandler(JsonHandlerKey, handler.NewJsonHandler())
 	routeHandler.AddHandler(RTFHandlerKey, handler.NewRTFHandler())
-	handler.ConnYouMap = make(map[string]net.Conn, 10000)
 }

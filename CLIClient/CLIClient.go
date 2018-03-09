@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -20,9 +19,6 @@ import (
 )
 
 var (
-	port         = flag.Int("port", 35580, "连接端口")
-	host         = flag.String("host", "127.0.0.1", "连接主机地址")
-	server       = flag.String("server", "127.0.0.1:35580", "连接主机地址和端口")
 	from_user_id string
 	ctx          = context.Background()
 )
@@ -49,21 +45,24 @@ const (
 )
 
 func main() {
-	flag.Parse()
-	conn, err := net.Dial("tcp", *server)
-	i := strings.LastIndex(conn.LocalAddr().String(), ":")
-	from_user_id = conn.LocalAddr().String()[i+1:]
-	log.Println("from_user_id", from_user_id)
+	conn, err := net.Dial("tcp", "127.0.0.1:35580")
 	if err != nil {
 		log.Println("连接不上主机：", err)
 		return
 	}
 	defer conn.Close()
+
+	i := strings.LastIndex(conn.LocalAddr().String(), ":")
+	from_user_id = conn.LocalAddr().String()[i+1:]
+	log.Println("from_user_id", from_user_id)
 	key := fmt.Sprint(rand.Int63n(time.Now().UnixNano()))
 	context.WithValue(ctx, core.CONNKEY, key)
 	context.WithValue(ctx, core.CONN, conn)
 	context.WithValue(ctx, core.USERID, from_user_id)
 	go request.SendHeartbeatHandler(ctx)
+
+	login(ctx)
+
 	bufReader := bufio.NewReader(os.Stdin)
 	for {
 		//读取命令行中一行数据
@@ -83,6 +82,25 @@ func main() {
 	}
 }
 
+func login(ctx context.Context) {
+	key := core.GetConnKey(ctx)
+	conn := core.GetConn(ctx)
+	var bigDataLength int32 = 1 << 17
+	for {
+		md := data.NewMetadata(bigDataLength, key)
+		md.ReqType = listen.JsonHandlerKey
+		m := data.Message{MsgType: "login", Msg: "登录", FromConnId: key}
+		md.Data, _ = json.Marshal(m)
+		md.Length = int32(len(md.Data))
+		dl, err := conn.Write(md.Packing())
+		if err != nil || dl != 6 {
+			log.Println("发送数据错误：", err)
+			break
+		}
+		time.Sleep(10 * time.Minute)
+	}
+}
+
 //开始聊天
 func startChat(cmd string, argss string, bufReader *bufio.Reader, key string, conn net.Conn) {
 	var bigDataLength int32 = 1 << 17
@@ -93,30 +111,33 @@ func startChat(cmd string, argss string, bufReader *bufio.Reader, key string, co
 	case list:
 	case del:
 	case chat:
-		//聊天模式
-		fmt.Println("和" + argss + "聊天中。。。输入send发送，bye结束聊天。")
-		var msg string
-	CHAT:
-		for {
-			msgLine, _ := bufReader.ReadString(byte('\n'))
-			switch strings.TrimSpace(msgLine) {
-			case send:
-				sendChatMsg(md, msg, key, argss, conn)
-				fmt.Println("信息已发送。。。输入bye结束聊天。")
-				msg = ""
-			case cancel:
-				msg = ""
-			case bye:
-				if len(msg) == 0 {
-					fmt.Println("与" + argss + "的聊天结束。。。")
-					break CHAT
-				}
-			default:
-				msg += msgLine
-			}
-		}
+		chatWith(argss, bufReader, md, key, conn)
 	case exit:
 		break
+	}
+}
+
+func chatWith(argss string, bufReader *bufio.Reader, md *data.Metadata, key string, conn net.Conn) {
+	//聊天模式
+	fmt.Println("和" + argss + "聊天中。。。输入send发送，bye结束聊天。")
+	var msg string
+	for {
+		msgLine, _ := bufReader.ReadString(byte('\n'))
+		switch strings.TrimSpace(msgLine) {
+		case send:
+			sendChatMsg(md, msg, key, argss, conn)
+			fmt.Println("信息已发送。。。输入bye结束聊天。")
+			msg = ""
+		case cancel:
+			msg = ""
+		case bye:
+			if len(msg) == 0 {
+				fmt.Println("与" + argss + "的聊天结束。。。")
+				return
+			}
+		default:
+			msg += msgLine
+		}
 	}
 }
 

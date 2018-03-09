@@ -9,8 +9,9 @@ import (
 	"net/http"
 	"time"
 
+	"html/template"
+
 	"github.com/fmyxyz/connectYou/core/data"
-	"github.com/fmyxyz/connectYou/core/handler"
 	"golang.org/x/net/websocket"
 )
 
@@ -31,11 +32,13 @@ func StartTCPServer(port int) {
 			log.Println("获取连接错误：", err)
 			return
 		}
+		defer conn.Close()
 		go handleConn(conn)
 	}
 }
 
 func StartWebsocketServer(port int) {
+	http.HandleFunc("/", indexHandler)
 	http.Handle("/ws", websocket.Handler(websocketHandler))
 	err := http.ListenAndServe(":"+string(port), nil)
 	if err != nil {
@@ -43,7 +46,9 @@ func StartWebsocketServer(port int) {
 		return
 	}
 }
-
+func indexHandler(rw http.ResponseWriter, req *http.Request) {
+	template.New("index")
+}
 func websocketHandler(ws *websocket.Conn) {
 	handleConn(ws)
 }
@@ -51,9 +56,9 @@ func websocketHandler(ws *websocket.Conn) {
 func handleConn(conn net.Conn) {
 	//保存于客户端的链接
 	key := fmt.Sprint(rand.Int63n(time.Now().UnixNano()))
-	handler.ConnYouMap[key] = conn
+	fmt.Println(key)
+	//context := core.NewConnContext(conn)
 
-	defer conn.Close()
 	var bigDataLength int32 = 1 << 17
 	bufReader := bufio.NewReader(conn)
 	bufWriter := bufio.NewWriter(conn)

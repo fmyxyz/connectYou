@@ -14,5 +14,5 @@ var (
 func main() {
 	flag.Parse()
 	listen.StartTCPServer(35580)
-	listen.StartWebsocketServer(28656)
+	//listen.StartWebsocketServer(28656)
 }
